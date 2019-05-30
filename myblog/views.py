@@ -1,7 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
+from django.utils import timezone
 from myblog.models import Post
+from myblog.forms import MyPostForm
 
 
 def stub_view(request, *args, **kwargs):
@@ -30,3 +32,21 @@ def detail_view(request, post_id):
         raise Http404
     context = {'post': post}
     return render(request, 'detail.html', context)
+
+
+# View for Post Model View
+def post_create_view(request):
+
+    if request.method == "POST":
+        form = MyPostForm(request.POST)
+
+        if form.is_valid():
+            model_instance = form.save(commit=False)
+            model_instance.published_date = timezone.now()
+            model_instance.author = request.user
+            model_instance.save()
+            return redirect('/')
+    else:
+        form = MyPostForm()
+        context = {'form': form}
+        return render(request, "post_create_view.html", context)
