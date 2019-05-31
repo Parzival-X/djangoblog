@@ -2,8 +2,11 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
 from django.utils import timezone
-from myblog.models import Post
+from django.contrib.auth.models import User, Group
+from rest_framework import viewsets
+from myblog.models import Post, Category
 from myblog.forms import MyPostForm
+from myblog.serializers import UserSerializer, GroupSerializer, PostSerializer, CategorySerializer
 
 
 def stub_view(request, *args, **kwargs):
@@ -34,7 +37,7 @@ def detail_view(request, post_id):
     return render(request, 'detail.html', context)
 
 
-# View for Post Model View
+# View for Post Model Views
 def post_create_view(request):
 
     if request.method == "POST":
@@ -50,3 +53,36 @@ def post_create_view(request):
         form = MyPostForm()
         context = {'form': form}
         return render(request, "post_create_view.html", context)
+
+
+# Views for REST frameworks
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for all Users ordered by active accounts.
+    """
+    queryset = User.objects.all().order_by('-is_active')
+    serializer_class = UserSerializer
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for all Groups ordered by name.
+    """
+    queryset = Group.objects.all().order_by('-name')
+    serializer_class = GroupSerializer
+
+
+class PostViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for all Posts ordered by published date.
+    """
+    queryset = Post.objects.all().order_by('-published_date')
+    serializer_class = PostSerializer
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for all Categories ordered by name.
+    """
+    queryset = Category.objects.all().order_by('-name')
+    serializer_class = CategorySerializer
